@@ -323,3 +323,14 @@ proxy = ""
 pushd = ""
 crond = ""
 gifbox = ""
+
+[elasticsearch]
+host = "http://elasticsearch"
+port = 9200
+api_key = ""
+
+exchange = "revolt.messages"
+message_queue = "messages.message"
+message_edit_queue = "messages.message_edit"
+message_delete_queue = "messages.message_delete"
+channel_delete_queue = "messages.channel_delete"

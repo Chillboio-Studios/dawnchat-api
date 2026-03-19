@@ -78,3 +78,13 @@ pub struct AckPayload {
     pub channel_id: String,
     pub message_id: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct MessageDeletePayload {
+    pub message_id: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ChannelDeletePayload {
+    pub channel_id: String
+}

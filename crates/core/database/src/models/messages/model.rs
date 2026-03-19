@@ -1,6 +1,6 @@
 use indexmap::{IndexMap, IndexSet};
 use iso8601_timestamp::Timestamp;
-use revolt_config::{config, FeaturesLimits};
+use revolt_config::{FeaturesLimits, capture_error, config};
 use revolt_models::v0::{
     self, BulkMessageResponse, DataMessageSend, Embed, MessageAuthor, MessageFlags, MessageSort,
     MessageWebhook, PushNotification, ReplyIntent, SendableEmbed, Text,
@@ -671,7 +671,7 @@ impl Message {
     pub async fn send(
         &mut self,
         db: &Database,
-        _amqp: Option<&AMQP>, // this is optional mostly for tests.
+        amqp: Option<&AMQP>, // this is optional mostly for tests.
         author: MessageAuthor<'_>,
         user: Option<v0::User>,
         member: Option<v0::Member>,
@@ -724,6 +724,13 @@ impl Message {
                 },
             )
             .await;
+        }
+
+        if let Some(amqp) = amqp {
+            if let Err(e) = amqp.new_message_search(self.clone()).await {
+                log::error!("Error pushing message to RabbitMQ: {e}");
+                capture_error(&e);
+            }
         }
 
         Ok(())
@@ -994,9 +1001,10 @@ impl Message {
     }
 
     /// Delete a message
-    pub async fn delete(self, db: &Database) -> Result<()> {
+    pub async fn delete(&self, db: &Database, amqp: Option<&AMQP>) -> Result<()> {
         let file_ids: Vec<String> = self
             .attachments
+            .as_ref()
             .map(|files| files.iter().map(|file| file.id.to_string()).collect())
             .unwrap_or_default();
 
@@ -1006,12 +1014,20 @@ impl Message {
 
         db.delete_message(&self.id).await?;
 
+        if let Some(amqp) = amqp {
+            if let Err(e) = amqp.delete_message_search(self.id.clone()).await {
+                log::error!("Error pushing message to RabbitMQ: {e}");
+                capture_error(&e);
+            }
+        }
+
         EventV1::MessageDelete {
-            id: self.id,
+            id: self.id.clone(),
             channel: self.channel.clone(),
         }
-        .p(self.channel)
+        .p(self.channel.clone())
         .await;
+
         Ok(())
     }
 

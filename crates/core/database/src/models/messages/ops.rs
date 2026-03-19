@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time::SystemTime;
 use revolt_result::Result;
 
-use crate::{AppendMessage, FieldsMessage, Message, MessageQuery, PartialMessage};
+use crate::{AppendMessage, FieldsMessage, Message, MessageQuery, PartialMessage, util::ChunkedDatabaseGenerator};
 
 #[cfg(feature = "mongodb")]
 mod mongodb;
@@ -50,4 +50,5 @@ pub trait AbstractMessages: Sync + Send {
         author: &str,
         since: SystemTime
     ) -> Result<HashMap<String, Vec<String>>>;
+    async fn fetch_all_messages(&self) -> Result<ChunkedDatabaseGenerator<Message>>;
 }
