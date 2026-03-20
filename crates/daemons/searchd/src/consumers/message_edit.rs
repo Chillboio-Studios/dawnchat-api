@@ -1,9 +1,18 @@
 use amqprs::{BasicProperties, Deliver, channel::{BasicAckArguments, Channel}, consumer::AsyncConsumer};
 use async_trait::async_trait;
-use revolt_database::Message;
+use revolt_database::{Database, Message};
 use revolt_search::ElasticsearchClient;
 
-pub struct MessageEditConsumer(pub ElasticsearchClient);
+pub struct MessageEditConsumer {
+    client: ElasticsearchClient,
+    database: Database
+}
+
+impl MessageEditConsumer {
+    pub fn new(client: ElasticsearchClient, database: Database) -> Self {
+        Self { client, database }
+    }
+}
 
 #[async_trait]
 impl AsyncConsumer for MessageEditConsumer {
@@ -15,8 +24,9 @@ impl AsyncConsumer for MessageEditConsumer {
         content: Vec<u8>,
     ) {
         let message = serde_json::from_slice::<Message>(&content).expect("Failed to decode message");
+        log::debug!("Received edit message {message:?}");
 
-        if self.0.edit_message(message).await.is_ok() {
+        if self.client.edit_message(&self.database, message).await.is_ok() {
             channel.basic_ack(BasicAckArguments::new(deliver.delivery_tag(), false)).await.expect("Failed to ack");
         } else {
             // todo requeue

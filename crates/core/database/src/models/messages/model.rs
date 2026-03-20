@@ -890,19 +890,27 @@ impl Message {
     /// Append content to message
     pub async fn append(
         db: &Database,
+        amqp: Option<&AMQP>,
         id: String,
         channel: String,
         append: AppendMessage,
     ) -> Result<()> {
-        db.append_message(&id, &append).await?;
+        if let Some(message) = db.append_message(&id, &append).await? {
+            if let Some(amqp) = amqp {
+                if let Err(e) = amqp.edit_message_search(message).await {
+                    log::error!("Error pushing message to RabbitMQ: {e}");
+                    capture_error(&e);
+                }
+            }
 
-        EventV1::MessageAppend {
-            id,
-            channel: channel.to_string(),
-            append: append.into(),
+            EventV1::MessageAppend {
+                id,
+                channel: channel.to_string(),
+                append: append.into(),
+            }
+            .p(channel)
+            .await;
         }
-        .p(channel)
-        .await;
 
         Ok(())
     }

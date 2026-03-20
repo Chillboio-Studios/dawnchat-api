@@ -1,6 +1,6 @@
 use bson::{to_bson, Document};
 use futures::try_join;
-use mongodb::options::{FindOptions, ReadConcern};
+use mongodb::options::{FindOptions, ReadConcern, ReturnDocument};
 use revolt_models::v0::MessageSort;
 use revolt_result::Result;
 
@@ -201,7 +201,7 @@ impl AbstractMessages for MongoDb {
     }
 
     /// Append information to a given message
-    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<()> {
+    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<Option<Message>> {
         let mut query = doc! {};
 
         if let Some(embeds) = &append.embeds {
@@ -219,18 +219,18 @@ impl AbstractMessages for MongoDb {
         }
 
         if query.is_empty() {
-            return Ok(());
+            return Ok(None);
         }
 
-        self.col::<Document>(COL)
-            .update_one(
+        self.col::<Message>(COL)
+            .find_one_and_update(
                 doc! {
                     "_id": id
                 },
                 query,
             )
+            .return_document(ReturnDocument::After)
             .await
-            .map(|_| ())
             .map_err(|_| create_database_error!("update_one", COL))
     }
 

@@ -10,12 +10,12 @@ use elasticsearch::{
     indices::{IndicesCreateParts, IndicesDeleteParts},
 };
 use elasticsearch_dsl::{FieldSort, Query, Search, SearchResponse, Sort};
-use revolt_database::Message;
+use revolt_database::{Database, Message};
 use serde_json::{Map, Value, json};
 
 pub use elasticsearch;
 
-use crate::SearchTerms;
+use crate::{MessageComponent, MetadataFile, SearchTerms};
 
 #[derive(Debug)]
 pub enum Error {
@@ -87,12 +87,6 @@ impl ElasticsearchClient {
             .indices()
             .create(IndicesCreateParts::Index("messages"))
             .body(json!({
-                // "settings": {
-                //     "index": {
-                //         "sort.field": "_id",
-                //         "sort.order": ["asc", "desc"],
-                //     },
-                // },
                 "mappings": {
                     "properties": {
                         "content": {"type": "text"},
@@ -105,9 +99,13 @@ impl ElasticsearchClient {
                         "embeds": {
                             "properties": {}
                         },
-                        "attachments": {  // TODO: images, videos, files
+                        "attachments": {
                             "type": "nested",
-                            "properties": {}
+                            "properties": {
+                                "metadata.type": {
+                                    "type": "keyword"
+                                }
+                            }
                         },
                         // TODO: links
                     }
@@ -152,15 +150,27 @@ impl ElasticsearchClient {
             }
         }
 
-        // TODO: component filtering
-        // Need to pass FileHash to this to extract metadata
+        if let Some(components) = terms.filters.components {
+            let mut components_query = Query::bool();
+
+            for component in components {
+                match component {
+                    MessageComponent::Image => components_query = components_query.should(Query::term("attachments.metadata.type", "Image")),
+                    MessageComponent::Video => components_query = components_query.should(Query::term("attachments.metadata.type", "Video")),
+                    MessageComponent::File => components_query = components_query.should(Query::exists("attachments.file._id")),
+                    MessageComponent::Embed => query = query.filter(Query::exists("embeds")),
+                };
+            }
+
+            query = query.filter(Query::nested("attachments", components_query));
+        }
 
         let search = Search::new()
             .query(query)
             .stats(false)
-            .sort([Sort::FieldSort(
+            .sort(Sort::FieldSort(
                 FieldSort::new("_id".to_string()).order(terms.sort.unwrap_or_default().into()),
-            )]);
+            ));
 
         let response = self
             .inner
@@ -184,7 +194,7 @@ impl ElasticsearchClient {
         }
     }
 
-    fn create_message_source(&self, message: Message) -> Value {
+    fn create_message_source(&self, _db: &Database, message: Message) -> Value {
         let mut map = Map::new();
 
         map.insert("channel".to_string(), Value::String(message.channel));
@@ -196,9 +206,21 @@ impl ElasticsearchClient {
         }
 
         if let Some(attachments) = message.attachments {
+            let mut files = Vec::new();
+
+            for attachment in attachments {
+                // TODO: swap this out for fetching the metadata from FileHash because of deprecation
+                // let metadata = attachment.as_hash(db).await.expect("Failed to fetch FileHash").metadata;
+
+                files.push(MetadataFile {
+                    metadata: attachment.metadata.clone(),
+                    file: attachment,
+                })
+            }
+
             map.insert(
                 "attachments".to_string(),
-                serde_json::to_value(attachments).unwrap(),
+                serde_json::to_value(files).unwrap(),
             );
         }
 
@@ -240,9 +262,9 @@ impl ElasticsearchClient {
         Value::Object(map)
     }
 
-    pub async fn index_message(&self, message: Message) -> Result<(), Error> {
+    pub async fn index_message(&self, db: &Database, message: Message) -> Result<(), Error> {
         let id = message.id.clone();
-        let source = self.create_message_source(message);
+        let source = self.create_message_source(db, message);
 
         let exception = self
             .inner
@@ -260,9 +282,9 @@ impl ElasticsearchClient {
         }
     }
 
-    pub async fn edit_message(&self, message: Message) -> Result<(), Error> {
+    pub async fn edit_message(&self, db: &Database, message: Message) -> Result<(), Error> {
         let id = message.id.clone();
-        let source = self.create_message_source(message);
+        let source = self.create_message_source(db, message);
 
         let exception = self
             .inner

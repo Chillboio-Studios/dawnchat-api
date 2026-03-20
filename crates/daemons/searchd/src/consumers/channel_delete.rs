@@ -1,9 +1,18 @@
 use amqprs::{BasicProperties, Deliver, channel::{BasicAckArguments, Channel}, consumer::AsyncConsumer};
 use async_trait::async_trait;
-use revolt_database::events::rabbit::ChannelDeletePayload;
+use revolt_database::{Database, events::rabbit::ChannelDeletePayload};
 use revolt_search::ElasticsearchClient;
 
-pub struct ChannelDeleteConsumer(pub ElasticsearchClient);
+pub struct ChannelDeleteConsumer {
+    client: ElasticsearchClient,
+    database: Database
+}
+
+impl ChannelDeleteConsumer {
+    pub fn new(client: ElasticsearchClient, database: Database) -> Self {
+        Self { client, database }
+    }
+}
 
 #[async_trait]
 impl AsyncConsumer for ChannelDeleteConsumer {
@@ -15,8 +24,9 @@ impl AsyncConsumer for ChannelDeleteConsumer {
         content: Vec<u8>,
     ) {
         let payload = serde_json::from_slice::<ChannelDeletePayload>(&content).expect("Failed to decode message");
+        log::debug!("Received channel delete {payload:?}");
 
-        if self.0.delete_channel(&payload.channel_id).await.is_ok() {
+        if self.client.delete_channel(&payload.channel_id).await.is_ok() {
             channel.basic_ack(BasicAckArguments::new(deliver.delivery_tag(), false)).await.expect("Failed to ack");
         } else {
             // todo requeue

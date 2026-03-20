@@ -1,15 +1,16 @@
 use iso8601_timestamp::Timestamp;
 use revolt_models::v0;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use revolt_database::{File, Metadata};
 
-#[derive(Copy, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
 pub enum AuthorType {
     User,
     // Bot,
     Webhook,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MessageComponent {
     Image,
     Video,
@@ -18,7 +19,7 @@ pub enum MessageComponent {
     Embed,
 }
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct SearchFilters {
     pub content: Option<String>,
     pub author: Option<Vec<String>>,
@@ -31,20 +32,26 @@ pub struct SearchFilters {
     pub components: Option<Vec<MessageComponent>>,
 }
 
-#[derive(Clone, Copy, Default, PartialEq, Eq)] 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum SortOrder {
     Asc,
     #[default]
     Desc,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SearchTerms {
     pub channels: Vec<String>,
     pub filters: SearchFilters,
     pub offset: Option<u64>,
     pub limit: Option<u64>,
     pub sort: Option<SortOrder>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MetadataFile {
+    pub file: File,
+    pub metadata: Metadata
 }
 
 impl From<v0::AuthorType> for AuthorType {

@@ -24,7 +24,7 @@ pub trait AbstractMessages: Sync + Send {
     async fn update_message(&self, id: &str, message: &PartialMessage, remove: Vec<FieldsMessage>) -> Result<()>;
 
     /// Append information to a given message
-    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<()>;
+    async fn append_message(&self, id: &str, append: &AppendMessage) -> Result<Option<Message>>;
 
     /// Add a new reaction to a message
     async fn add_reaction(&self, id: &str, emoji: &str, user: &str) -> Result<()>;

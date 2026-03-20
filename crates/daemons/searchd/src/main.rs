@@ -50,7 +50,7 @@ async fn _main() {
             &config,
             &connection,
             &config.elasticsearch.message_queue,
-            consumers::MessageConsumer(client.clone()),
+            consumers::MessageConsumer::new(client.clone(), db.clone()),
         )
         .await,
     );
@@ -60,7 +60,7 @@ async fn _main() {
             &config,
             &connection,
             &config.elasticsearch.message_edit_queue,
-            consumers::MessageEditConsumer(client.clone()),
+            consumers::MessageEditConsumer::new(client.clone(), db.clone()),
         )
         .await,
     );
@@ -70,7 +70,7 @@ async fn _main() {
             &config,
             &connection,
             &config.elasticsearch.message_delete_queue,
-            consumers::MessageDeleteConsumer(client.clone()),
+            consumers::MessageDeleteConsumer::new(client.clone(), db.clone()),
         )
         .await,
     );
@@ -80,7 +80,7 @@ async fn _main() {
             &config,
             &connection,
             &config.elasticsearch.channel_delete_queue,
-            consumers::ChannelDeleteConsumer(client.clone()),
+            consumers::ChannelDeleteConsumer::new(client.clone(), db.clone()),
         )
         .await,
     );
