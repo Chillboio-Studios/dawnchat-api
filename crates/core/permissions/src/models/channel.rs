@@ -100,7 +100,7 @@ pub enum ChannelPermission {
     /// Mention roles
     MentionRoles = 1 << 38,
 
-    ViewAuditLogs = 1 << 39,
+    ViewAuditLogs = 1 << 40,
 
     // * Misc. permissions
     // % Bits 39 to 52: free area
