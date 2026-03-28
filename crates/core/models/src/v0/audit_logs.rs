@@ -1,7 +1,4 @@
-use crate::v0::{
-    Member, PartialChannel, PartialMember,
-    PartialRole, PartialServer, User,
-};
+use crate::v0::{Member, PartialChannel, PartialMember, PartialRole, PartialServer, User};
 use revolt_permissions::Override;
 
 auto_derived!(
@@ -32,6 +29,16 @@ auto_derived!(
         MessageBulkDelete {
             channel: String,
             count: usize,
+        },
+        MessagePin {
+            message: String,
+            author: String,
+            channel: String,
+        },
+        MessageUnpin {
+            message: String,
+            author: String,
+            channel: String,
         },
         BanCreate {
             user: String,
@@ -84,6 +91,10 @@ auto_derived!(
         },
         RolesReorder {
             positions: Vec<String>,
+        },
+        InviteCreate {
+            invite: String,
+            channel: String,
         },
         InviteDelete {
             invite: String,

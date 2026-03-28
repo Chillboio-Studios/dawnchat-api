@@ -48,7 +48,7 @@ pub async fn query(
                 r#type,
                 before,
                 after,
-                limit,
+                limit: limit.unwrap_or(50),
             },
         )
         .await?;
@@ -64,7 +64,7 @@ pub async fn query(
 
 #[cfg(test)]
 mod test {
-    use revolt_database::Server;
+    use revolt_database::{Member, Server};
     use revolt_models::v0;
     use rocket::http::{Header, Status};
 
@@ -85,6 +85,7 @@ mod test {
         )
         .await
         .expect("Failed to create test server.");
+        Member::create(&harness.db, &server, &user, None).await.unwrap();
 
         let channel = &channels[0];
 
@@ -101,6 +102,7 @@ mod test {
                 nsfw: None,
                 archived: None,
                 voice: None,
+                slowmode: None,
                 remove: Vec::new(),
             })
             .dispatch()
@@ -122,6 +124,7 @@ mod test {
                 nsfw: None,
                 archived: None,
                 voice: None,
+                slowmode: None,
                 remove: Vec::new(),
             })
             .dispatch()
@@ -162,6 +165,7 @@ mod test {
 
         assert_eq!(entries.len(), 3);
         assert_eq!(users.len(), 1);
+        assert_eq!(members.len(), 1);
 
         assert_eq!(&users[0].id, &user.id);
 

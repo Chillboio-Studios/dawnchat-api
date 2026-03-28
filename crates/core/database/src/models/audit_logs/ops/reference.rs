@@ -71,7 +71,7 @@ impl AbstractAuditLogs for ReferenceDb {
             .collect::<Vec<_>>();
 
         logs.sort_by(|a, b| b.id.cmp(&a.id));
-        logs.truncate(query.limit.unwrap_or(50) as usize);
+        logs.truncate(query.limit as usize);
         Ok(logs)
     }
 }

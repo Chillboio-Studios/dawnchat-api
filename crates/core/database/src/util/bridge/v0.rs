@@ -190,7 +190,7 @@ impl From<crate::Channel> for Channel {
                 role_permissions,
                 nsfw,
                 voice,
-                slowmode
+                slowmode,
             } => Channel::TextChannel {
                 id,
                 server,
@@ -202,7 +202,7 @@ impl From<crate::Channel> for Channel {
                 role_permissions,
                 nsfw,
                 voice: voice.map(|voice| voice.into()),
-                slowmode
+                slowmode,
             },
         }
     }
@@ -256,7 +256,7 @@ impl From<Channel> for crate::Channel {
                 role_permissions,
                 nsfw,
                 voice,
-                slowmode
+                slowmode,
             } => crate::Channel::TextChannel {
                 id,
                 server,
@@ -268,7 +268,7 @@ impl From<Channel> for crate::Channel {
                 role_permissions,
                 nsfw,
                 voice: voice.map(|voice| voice.into()),
-                slowmode
+                slowmode,
             },
         }
     }
@@ -307,7 +307,7 @@ impl From<PartialChannel> for crate::PartialChannel {
             default_permissions: value.default_permissions,
             last_message_id: value.last_message_id,
             voice: value.voice.map(|voice| voice.into()),
-            slowmode: value.slowmode
+            slowmode: value.slowmode,
         }
     }
 }
@@ -1404,7 +1404,7 @@ impl From<FieldsMessage> for crate::FieldsMessage {
 impl From<crate::VoiceInformation> for VoiceInformation {
     fn from(value: crate::VoiceInformation) -> Self {
         VoiceInformation {
-            max_users: value.max_users
+            max_users: value.max_users,
         }
     }
 }
@@ -1444,13 +1444,12 @@ impl From<crate::AuditLogEntryAction> for AuditLogEntryAction {
             crate::AuditLogEntryAction::MemberKick { user } => {
                 AuditLogEntryAction::MemberKick { user }
             }
-            crate::AuditLogEntryAction::ServerEdit {
-                before,
-                after,
-            } => AuditLogEntryAction::ServerEdit {
-                before: before.into(),
-                after: after.into(),
-            },
+            crate::AuditLogEntryAction::ServerEdit { before, after } => {
+                AuditLogEntryAction::ServerEdit {
+                    before: before.into(),
+                    after: after.into(),
+                }
+            }
             crate::AuditLogEntryAction::RoleEdit {
                 role,
                 before,
@@ -1516,6 +1515,27 @@ impl From<crate::AuditLogEntryAction> for AuditLogEntryAction {
             },
             crate::AuditLogEntryAction::EmojiDelete { emoji, name } => {
                 AuditLogEntryAction::EmojiDelete { emoji, name }
+            }
+            crate::AuditLogEntryAction::MessagePin {
+                message,
+                author,
+                channel,
+            } => AuditLogEntryAction::MessagePin {
+                message,
+                author,
+                channel,
+            },
+            crate::AuditLogEntryAction::MessageUnpin {
+                message,
+                author,
+                channel,
+            } => AuditLogEntryAction::MessageUnpin {
+                message,
+                author,
+                channel,
+            },
+            crate::AuditLogEntryAction::InviteCreate { invite, channel } => {
+                AuditLogEntryAction::InviteCreate { invite, channel }
             }
         }
     }

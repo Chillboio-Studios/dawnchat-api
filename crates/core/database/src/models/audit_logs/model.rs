@@ -43,6 +43,16 @@ auto_derived!(
             channel: String,
             count: usize,
         },
+        MessagePin {
+            message: String,
+            author: String,
+            channel: String,
+        },
+        MessageUnpin {
+            message: String,
+            author: String,
+            channel: String,
+        },
         BanCreate {
             user: String,
         },
@@ -95,6 +105,10 @@ auto_derived!(
         RolesReorder {
             positions: Vec<String>,
         },
+        InviteCreate {
+            invite: String,
+            channel: String,
+        },
         InviteDelete {
             invite: String,
             channel: String,
@@ -126,7 +140,7 @@ auto_derived!(
         /// Entries after a certain entry id
         pub after: Option<String>,
         /// Maximum number of entries to fetch
-        pub limit: Option<i64>,
+        pub limit: i64,
     }
 );
 
@@ -205,6 +219,12 @@ impl AuditLogEntry {
                 AuditLogEntryAction::MemberKick { user } => {
                     user_ids.insert(user.clone());
                 }
+                AuditLogEntryAction::MessagePin { author, .. } => {
+                    user_ids.insert(author.clone());
+                }
+                AuditLogEntryAction::MessageUnpin { author, .. } => {
+                    user_ids.insert(author.clone());
+                }
                 AuditLogEntryAction::ServerEdit { .. } => {}
                 AuditLogEntryAction::RoleEdit { .. } => {}
                 AuditLogEntryAction::RoleCreate { .. } => {}
@@ -214,6 +234,7 @@ impl AuditLogEntry {
                 AuditLogEntryAction::ChannelEdit { .. } => {}
                 AuditLogEntryAction::ChannelRolePermissionsEdit { .. } => {}
                 AuditLogEntryAction::ChannelDelete { .. } => {}
+                AuditLogEntryAction::InviteCreate { .. } => {}
                 AuditLogEntryAction::InviteDelete { .. } => {}
                 AuditLogEntryAction::WebhookCreate { .. } => {}
                 AuditLogEntryAction::WebhookDelete { .. } => {}

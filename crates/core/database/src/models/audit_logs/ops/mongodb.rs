@@ -48,13 +48,11 @@ impl AbstractAuditLogs for MongoDb {
             filter.insert("_id", doc);
         };
 
-        let limit = query.limit.unwrap_or(50);
-
         self.find_with_options(
             COL,
             filter,
             FindOptions::builder()
-                .limit(limit)
+                .limit(query.limit)
                 .sort(doc! { "_id": -1 })
                 .build(),
         )
