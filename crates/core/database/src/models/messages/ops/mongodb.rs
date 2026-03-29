@@ -416,7 +416,7 @@ impl AbstractMessages for MongoDb {
 
         Ok(deleted_messages)
     }
-    
+
     async fn fetch_all_messages(&self) -> Result<ChunkedDatabaseGenerator<Message>> {
         let mut session = self
             .start_session()

@@ -353,7 +353,7 @@ impl AbstractMessages for ReferenceDb {
 
         Ok(deleted_messages)
     }
-    
+
     async fn fetch_all_messages(&self) -> Result<ChunkedDatabaseGenerator<Message>> {
         Ok(ChunkedDatabaseGenerator::new_reference(
             self.messages.lock().await.values().cloned().collect(),
