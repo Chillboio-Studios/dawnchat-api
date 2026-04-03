@@ -11,10 +11,10 @@ publish = false
 
 [dependencies]
 # Utility
-log = "0.4"
+log = { workspace = true }
 
 # Async
-tokio = { version = "1" }
+tokio = { workspace = true }
 
 # Core
 revolt-database = { workspace = true }
