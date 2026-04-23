@@ -17,7 +17,7 @@ concurrency:
 jobs:
   release-please:
     name: Release Please
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       release_created: ${{ steps.rp.outputs.release_created }}
       tag_name: ${{ steps.rp.outputs.tag_name }}
