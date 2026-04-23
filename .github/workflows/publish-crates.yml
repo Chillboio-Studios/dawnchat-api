@@ -8,7 +8,7 @@ on:
 jobs:
   publish:
     name: Publish Crates
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
