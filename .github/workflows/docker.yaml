@@ -30,6 +30,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install system build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! command -v apt-get >/dev/null 2>&1; then
+            echo "apt-get is required on this runner to install compiler dependencies"
+            exit 1
+          fi
+
+          if command -v sudo >/dev/null 2>&1; then
+            SUDO="sudo"
+          else
+            SUDO=""
+          fi
+
+          $SUDO apt-get update
+          $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential \
+            gcc \
+            g++ \
+            pkg-config \
+            clang \
+            cmake \
+            libssl-dev \
+            protobuf-compiler \
+            ca-certificates
+
+          cc --version
+
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@cd24790a7f5f6439ac32cc94f5523cb2de8bfa8c # use-mise-action-v1.1.0
         with:
