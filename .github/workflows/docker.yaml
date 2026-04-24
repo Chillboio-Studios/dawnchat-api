@@ -25,71 +25,33 @@ env:
 jobs:
   build-crates:
     name: Install requirements and build crates from scratch
-    runs-on: [self-hosted, cs-003]
+    runs-on: [ubuntu-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install system build dependencies
+      - name: Build crates from scratch (Debian 12 toolchain)
         shell: bash
         run: |
           set -euo pipefail
-
-          missing_tools=()
-          for tool in cc pkg-config clang cmake protoc; do
-            if ! command -v "$tool" >/dev/null 2>&1; then
-              missing_tools+=("$tool")
-            fi
-          done
-
-          if [ "${#missing_tools[@]}" -eq 0 ]; then
-            echo "Required build tools already installed"
-          else
-            if ! command -v apt-get >/dev/null 2>&1; then
-              echo "Missing tools: ${missing_tools[*]}"
-              echo "apt-get is unavailable on this runner; install dependencies manually"
-              exit 1
-            fi
-
-            if [ "$(id -u)" -eq 0 ]; then
-              SUDO=""
-            elif command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
-              SUDO="sudo -n"
-            else
-              echo "Missing tools: ${missing_tools[*]}"
-              echo "Runner user has no passwordless sudo. Preinstall dependencies on cs-003 or configure NOPASSWD sudo for the runner user."
-              exit 1
-            fi
-
-            $SUDO apt-get update
-            $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-              build-essential \
-              gcc \
-              g++ \
-              pkg-config \
-              clang \
-              cmake \
-              libssl-dev \
-              protobuf-compiler \
-              ca-certificates
-          fi
-
-          cc --version
-
-      - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cd24790a7f5f6439ac32cc94f5523cb2de8bfa8c # use-mise-action-v1.1.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install toolchain and requirements
-        run: mise install
-
-      - name: Build crates from scratch
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo clean
-          mise build
+          docker run --rm \
+            -v "$PWD":/work \
+            -w /work \
+            rust:1.92.0-slim-bookworm \
+            bash -lc '
+              set -euo pipefail
+              apt-get update
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                build-essential \
+                clang \
+                cmake \
+                pkg-config \
+                libssl-dev \
+                protobuf-compiler \
+                ca-certificates
+              cargo clean
+              cargo build --release --bins
+            '
 
       - name: Package built binaries
         shell: bash
@@ -164,7 +126,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: false
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image_name }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.image_name }}
           cache-to: type=gha,scope=${{ matrix.image_name }},mode=max
@@ -233,7 +195,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image_name }}
