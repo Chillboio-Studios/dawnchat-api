@@ -95,8 +95,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          BIN_DIR=""
+          if compgen -G "target/release/revolt-*" >/dev/null; then
+            BIN_DIR="target/release"
+          elif compgen -G "target/debug/revolt-*" >/dev/null; then
+            BIN_DIR="target/debug"
+          else
+            echo "No built revolt-* binaries found under target/release or target/debug"
+            exit 1
+          fi
+
+          echo "Packaging binaries from ${BIN_DIR}"
           mkdir -p ci-bin
-          install -m 0755 target/release/revolt-* ci-bin/
+          install -m 0755 "${BIN_DIR}"/revolt-* ci-bin/
 
       - name: Upload crate binaries artifact
         uses: actions/upload-artifact@v4
