@@ -35,28 +35,44 @@ jobs:
         run: |
           set -euo pipefail
 
-          if ! command -v apt-get >/dev/null 2>&1; then
-            echo "apt-get is required on this runner to install compiler dependencies"
-            exit 1
-          fi
+          missing_tools=()
+          for tool in cc pkg-config clang cmake protoc; do
+            if ! command -v "$tool" >/dev/null 2>&1; then
+              missing_tools+=("$tool")
+            fi
+          done
 
-          if command -v sudo >/dev/null 2>&1; then
-            SUDO="sudo"
+          if [ "${#missing_tools[@]}" -eq 0 ]; then
+            echo "Required build tools already installed"
           else
-            SUDO=""
-          fi
+            if ! command -v apt-get >/dev/null 2>&1; then
+              echo "Missing tools: ${missing_tools[*]}"
+              echo "apt-get is unavailable on this runner; install dependencies manually"
+              exit 1
+            fi
 
-          $SUDO apt-get update
-          $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential \
-            gcc \
-            g++ \
-            pkg-config \
-            clang \
-            cmake \
-            libssl-dev \
-            protobuf-compiler \
-            ca-certificates
+            if [ "$(id -u)" -eq 0 ]; then
+              SUDO=""
+            elif command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+              SUDO="sudo -n"
+            else
+              echo "Missing tools: ${missing_tools[*]}"
+              echo "Runner user has no passwordless sudo. Preinstall dependencies on cs-003 or configure NOPASSWD sudo for the runner user."
+              exit 1
+            fi
+
+            $SUDO apt-get update
+            $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential \
+              gcc \
+              g++ \
+              pkg-config \
+              clang \
+              cmake \
+              libssl-dev \
+              protobuf-compiler \
+              ca-certificates
+          fi
 
           cc --version
 
