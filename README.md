@@ -2,12 +2,12 @@
 <h1>
   Stoat Backend
   
-  [![Stars](https://img.shields.io/github/stars/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/stargazers)
-  [![Forks](https://img.shields.io/github/forks/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/network/members)
-  [![Pull Requests](https://img.shields.io/github/issues-pr/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/pulls)
-  [![Issues](https://img.shields.io/github/issues/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/issues)
-  [![Contributors](https://img.shields.io/github/contributors/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/graphs/contributors)
-  [![License](https://img.shields.io/github/license/stoatchat/stoatchat?style=flat-square&logoColor=white)](https://github.com/stoatchat/stoatchat/blob/main/LICENSE)
+  [![Stars](https://img.shields.io/github/stars/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/stargazers)
+  [![Forks](https://img.shields.io/github/forks/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/network/members)
+  [![Pull Requests](https://img.shields.io/github/issues-pr/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/pulls)
+  [![Issues](https://img.shields.io/github/issues/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/issues)
+  [![Contributors](https://img.shields.io/github/contributors/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/graphs/contributors)
+  [![License](https://img.shields.io/github/license/Chillboio-Studios/dawnchat-api?style=flat-square&logoColor=white)](https://github.com/Chillboio-Studios/dawnchat-api/blob/main/LICENSE)
 </h1>
 The services and libraries that power the Stoat service.<br/>
 <br/>
@@ -70,8 +70,8 @@ As a heads-up, the development environment uses the following ports:
 Now you can clone and build the project:
 
 ```bash
-git clone https://github.com/stoatchat/stoatchat stoat-backend
-cd stoat-backend
+git clone https://github.com/Chillboio-Studios/dawnchat-api
+cd dawnchat-api
 mise install
 mise build
 ```
@@ -166,7 +166,6 @@ When signing up, go to http://localhost:14080 to find confirmation/password rese
 
 To stop all services, hit (CTRL + c) in the terminal you ran `mise start` and run `mise docker:stop`
 
-
 ## Deployment Guide
 
 ### Cutting new crate releases
@@ -195,7 +194,7 @@ Tag and push a new release by running:
 just release
 ```
 
-If you have bumped the crate versions, proceed to [GitHub releases](https://github.com/stoatchat/stoatchat/releases/new) to create a changelog.
+If you have bumped the crate versions, proceed to [GitHub releases](https://github.com/Chillboio-Studios/dawnchat-api/releases/new) to create a changelog.
 
 ## Testing
 
@@ -214,6 +213,6 @@ TEST_DB=MONGODB cargo nextest run
 
 ## License
 
-The Stoat backend is generally licensed under the [GNU Affero General Public License v3.0](https://github.com/stoatchat/stoatchat/blob/main/LICENSE).
+The Stoat backend is generally licensed under the [GNU Affero General Public License v3.0](https://github.com/Chillboio-Studios/dawnchat-api/blob/main/LICENSE).
 
 **Individual crates may supply their own licenses!**
