@@ -2,7 +2,7 @@ FROM debian:12 AS debian
 
 # Bundle Stage
 FROM gcr.io/distroless/cc-debian12:nonroot
-COPY ci-bin/revolt-autumn ./
+COPY --chmod=755 ci-bin/revolt-autumn ./
 COPY --from=mwader/static-ffmpeg:7.0.2 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:7.0.2 /ffprobe /usr/local/bin/
 COPY --from=debian /usr/bin/uname /usr/bin/uname
