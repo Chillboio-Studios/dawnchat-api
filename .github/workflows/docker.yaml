@@ -30,25 +30,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build crates from scratch (Debian 12 toolchain)
+      - name: Build crates from scratch (Debian 12 + rustup)
         shell: bash
         run: |
           set -euo pipefail
           docker run --rm \
             -v "$PWD":/work \
             -w /work \
-            rust:1.92.0-slim-bookworm \
+            debian:12 \
             bash -lc '
               set -euo pipefail
               apt-get update
               env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
                 build-essential \
+                curl \
                 clang \
                 cmake \
                 pkg-config \
                 libssl-dev \
                 protobuf-compiler \
                 ca-certificates
+              curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal --default-toolchain 1.92.0
+              . "$HOME/.cargo/env"
+              cargo --version
               cargo clean
               cargo build --release --bins
             '
