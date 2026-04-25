@@ -6,8 +6,9 @@ use revolt_database::{
     util::reference::Reference,
     voice::{
         create_voice_state, delete_channel_voice_state, delete_voice_state,
-        get_user_moved_from_voice, get_user_moved_to_voice, update_voice_state_tracks,
-        RoomMetadata, UserVoiceChannel, VoiceClient,
+        get_call_notification_recipients, get_user_moved_from_voice, get_user_moved_to_voice,
+        get_voice_channel_members, update_voice_state_tracks, RoomMetadata, UserVoiceChannel,
+        VoiceClient,
     },
     Database, AMQP,
 };
@@ -21,7 +22,7 @@ use crate::guard::AuthHeader;
 pub async fn ingress(
     db: &State<Database>,
     voice_client: &State<VoiceClient>,
-    _amqp: &State<AMQP>,
+    amqp: &State<AMQP>,
     node: &str,
     auth_header: AuthHeader<'_>,
     body: &str,
@@ -93,6 +94,33 @@ pub async fn ingress(
                 .await;
             };
 
+            // Re-enable DM / Group call ringing updates for web clients and pushd.
+            if server_id.is_none() {
+                let members = get_voice_channel_members(&channel).await?;
+
+                if members.as_ref().is_some_and(|m| m.len() == 1) {
+                    let now = joined_at.format_short().to_string();
+                    let recipients = get_call_notification_recipients(channel_id, user_id).await?;
+
+                    if let Err(e) = amqp
+                        .dm_call_updated(user_id, channel_id, Some(&now), false, recipients.clone())
+                        .await
+                    {
+                        revolt_config::capture_error(&e);
+                    }
+
+                    EventV1::DmCallRingingUpdate {
+                        channel_id: channel_id.to_string(),
+                        initiator_id: user_id.to_string(),
+                        started_at: Some(now),
+                        ended: false,
+                        recipients,
+                    }
+                    .p(channel_id.to_string())
+                    .await;
+                }
+            }
+
             // TODO: fix `num_participants` being incorrect sometimes see (#457)
             // First user who joined - send call started system message.
             // if event.room.as_ref().unwrap().num_participants == 1 {
@@ -163,6 +191,26 @@ pub async fn ingress(
                 .p(channel_id.clone())
                 .await;
             };
+
+            if server_id.is_none() {
+                let members = get_voice_channel_members(&channel).await?;
+                if members.is_none_or(|m| m.is_empty()) {
+                    if let Err(e) = amqp.dm_call_updated(user_id, channel_id, None, true, None).await
+                    {
+                        revolt_config::capture_internal_error!(&e);
+                    }
+
+                    EventV1::DmCallRingingUpdate {
+                        channel_id: channel_id.clone(),
+                        initiator_id: user_id.clone(),
+                        started_at: None,
+                        ended: true,
+                        recipients: None,
+                    }
+                    .p(channel_id.clone())
+                    .await;
+                }
+            }
 
             // See above for why this is commented out
 

@@ -298,6 +298,15 @@ pub enum EventV1 {
         from: String,
         to: String,
         token: String,
+    },
+
+    /// DM / Group call ringing state update
+    DmCallRingingUpdate {
+        channel_id: String,
+        initiator_id: String,
+        started_at: Option<String>,
+        ended: bool,
+        recipients: Option<Vec<String>>,
     }
 }
 

@@ -1,4 +1,5 @@
 use revolt_database::{
+    events::client::EventV1,
     util::reference::Reference,
     voice::{get_voice_state, UserVoiceChannel, VoiceClient},
     Channel, Database, User, AMQP,
@@ -67,6 +68,16 @@ pub async fn stop_ring(
             revolt_config::capture_internal_error!(&e);
             return Err(e);
         }
+
+        EventV1::DmCallRingingUpdate {
+            channel_id: channel.id().to_string(),
+            initiator_id: user.id.clone(),
+            started_at: None,
+            ended: true,
+            recipients: Some(vec![target_user.id.to_string()]),
+        }
+        .p(channel.id().to_string())
+        .await;
 
         Ok(EmptyResponse)
     } else {
