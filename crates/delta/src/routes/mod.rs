@@ -10,6 +10,7 @@ mod channels;
 mod customisation;
 mod invites;
 mod onboard;
+mod oauth2;
 mod policy;
 mod push;
 mod root;
@@ -38,6 +39,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/auth/account" => rocket_authifier::routes::account::routes(),
             "/auth/session" => rocket_authifier::routes::session::routes(),
             "/auth/mfa" => rocket_authifier::routes::mfa::routes(),
+            "/auth/oauth2" => oauth2::routes(),
             "/onboard" => onboard::routes(),
             "/policy" => policy::routes(),
             "/push" => push::routes(),
@@ -60,6 +62,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/auth/account" => rocket_authifier::routes::account::routes(),
             "/auth/session" => rocket_authifier::routes::session::routes(),
             "/auth/mfa" => rocket_authifier::routes::mfa::routes(),
+            "/auth/oauth2" => oauth2::routes(),
             "/onboard" => onboard::routes(),
             "/policy" => policy::routes(),
             "/push" => push::routes(),
@@ -83,6 +86,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/auth/account" => rocket_authifier::routes::account::routes(),
             "/auth/session" => rocket_authifier::routes::session::routes(),
             "/auth/mfa" => rocket_authifier::routes::mfa::routes(),
+            "/auth/oauth2" => oauth2::routes(),
             "/onboard" => onboard::routes(),
             "/push" => push::routes(),
             "/sync" => sync::routes(),
@@ -104,6 +108,7 @@ pub fn mount(config: Settings, mut rocket: Rocket<Build>) -> Rocket<Build> {
             "/auth/account" => rocket_authifier::routes::account::routes(),
             "/auth/session" => rocket_authifier::routes::session::routes(),
             "/auth/mfa" => rocket_authifier::routes::mfa::routes(),
+            "/auth/oauth2" => oauth2::routes(),
             "/onboard" => onboard::routes(),
             "/push" => push::routes(),
             "/sync" => sync::routes()

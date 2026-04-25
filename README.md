@@ -100,6 +100,31 @@ proxy = "https://abc@your.sentry/1"
 
 If you use custom service ports, update both Docker compose mappings and relevant override files.
 
+## OAuth2 Login (Optional)
+
+Delta now exposes OAuth2 login routes at:
+
+- `GET /auth/oauth2/enabled`
+- `GET /auth/oauth2/authorize?redirect_uri=<client-callback>`
+- `GET /auth/oauth2/callback`
+- `POST /auth/oauth2/exchange`
+
+To enable OAuth2, set these environment variables for the API process:
+
+- `DAWNCHAT_OAUTH2_CLIENT_ID`
+- `DAWNCHAT_OAUTH2_AUTHORIZE_URL`
+- `DAWNCHAT_OAUTH2_TOKEN_URL`
+- `DAWNCHAT_OAUTH2_USERINFO_URL`
+
+Optional:
+
+- `DAWNCHAT_OAUTH2_CLIENT_SECRET`
+- `DAWNCHAT_OAUTH2_SCOPE` (default: `openid profile email`)
+- `DAWNCHAT_OAUTH2_PROVIDER_NAME` (default: `OAuth2`)
+- `DAWNCHAT_OAUTH2_CALLBACK_URL` (default: `<hosts.api>/auth/oauth2/callback`)
+- `DAWNCHAT_OAUTH2_EMAIL_FIELD` (default: `email`)
+- `DAWNCHAT_OAUTH2_STATE_SECRET` (falls back to `api.security.authifier_shield_key`)
+
 ## Building
 
 Build all binaries in release mode:

@@ -421,6 +421,20 @@ pub struct Sentry {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+pub struct Oauth2ProviderConfig {
+    /// Issuer URL (e.g. https://app.dawn-chat.com)
+    pub issuer: String,
+    /// Access token lifetime in seconds
+    pub access_token_lifetime: u64,
+    /// Refresh token lifetime in seconds
+    pub refresh_token_lifetime: u64,
+    /// Supported scopes (comma-separated string)
+    pub supported_scopes: String,
+    /// Allow public clients (no client_secret)
+    pub allow_public_clients: bool,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Settings {
     pub database: Database,
     pub rabbit: Rabbit,
@@ -434,6 +448,7 @@ pub struct Settings {
     pub sentry: Sentry,
     pub production: bool,
     pub disable_events_dont_use: bool,
+    pub oauth2: Oauth2ProviderConfig,
 }
 
 impl Settings {

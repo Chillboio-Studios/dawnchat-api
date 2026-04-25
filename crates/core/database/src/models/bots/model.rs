@@ -38,6 +38,19 @@ auto_derived_partial!(
         /// Enum of bot flags
         #[serde(skip_serializing_if = "Option::is_none")]
         pub flags: Option<i32>,
+
+        /// OAuth2 Client ID (for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_client_id: Option<String>,
+        /// OAuth2 Client Secret (for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_client_secret: Option<String>,
+        /// Allowed OAuth2 Redirect URIs (for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_redirect_uris: Option<Vec<String>>,
+        /// Allowed OAuth2 Scopes (for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_scopes: Option<Vec<String>>,
     },
     "PartialBot"
 );

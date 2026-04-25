@@ -34,9 +34,12 @@ pub async fn edit_bot(
         user.update_username(db, name).await?;
     }
 
+
     if data.public.is_none()
         && data.analytics.is_none()
         && data.interactions_url.is_none()
+        && data.oauth2_redirect_uris.is_none()
+        && data.oauth2_scopes.is_none()
         && data.remove.is_empty()
     {
         return Ok(Json(v0::BotWithUserResponse {
@@ -49,14 +52,30 @@ pub async fn edit_bot(
         public,
         analytics,
         interactions_url,
+        oauth2_redirect_uris,
+        oauth2_scopes,
         remove,
         ..
     } = data;
+
+    // If any OAuth2 field is being set, ensure client_id/secret exist
+    let (oauth2_client_id, oauth2_client_secret) = if oauth2_redirect_uris.is_some() || oauth2_scopes.is_some() {
+        (
+            bot.oauth2_client_id.clone().or(Some(nanoid::nanoid!(32))),
+            bot.oauth2_client_secret.clone().or(Some(nanoid::nanoid!(64)))
+        )
+    } else {
+        (bot.oauth2_client_id.clone(), bot.oauth2_client_secret.clone())
+    };
 
     let partial = PartialBot {
         public,
         analytics,
         interactions_url,
+        oauth2_client_id,
+        oauth2_client_secret,
+        oauth2_redirect_uris,
+        oauth2_scopes,
         ..Default::default()
     };
 

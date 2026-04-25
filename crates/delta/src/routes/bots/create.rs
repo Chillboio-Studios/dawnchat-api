@@ -22,7 +22,22 @@ pub async fn create_bot(
         })
     })?;
 
-    let (bot, user) = Bot::create(db, info.name, &user, None).await?;
+    // Generate client_id and client_secret if any OAuth2 fields are present
+    let (oauth2_client_id, oauth2_client_secret) = if info.oauth2_redirect_uris.is_some() || info.oauth2_scopes.is_some() {
+        (Some(nanoid::nanoid!(32)), Some(nanoid::nanoid!(64)))
+    } else {
+        (None, None)
+    };
+
+    let mut partial = revolt_database::PartialBot {
+        oauth2_client_id,
+        oauth2_client_secret,
+        oauth2_redirect_uris: info.oauth2_redirect_uris,
+        oauth2_scopes: info.oauth2_scopes,
+        ..Default::default()
+    };
+
+    let (mut bot, user) = Bot::create(db, info.name, &user, Some(partial)).await?;
     Ok(Json(v0::BotWithUserResponse {
         bot: bot.into(),
         user: user.into_self(false).await,

@@ -54,6 +54,19 @@ auto_derived!(
             serde(skip_serializing_if = "crate::if_zero_u32", default)
         )]
         pub flags: u32,
+
+        /// OAuth2 Client ID (for provider)
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub oauth2_client_id: Option<String>,
+        /// OAuth2 Client Secret (for provider)
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub oauth2_client_secret: Option<String>,
+        /// Allowed OAuth2 Redirect URIs (for provider)
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub oauth2_redirect_uris: Option<Vec<String>>,
+        /// Allowed OAuth2 Scopes (for provider)
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        pub oauth2_scopes: Option<Vec<String>>,
     }
 
     /// Optional fields on bot object
@@ -109,6 +122,12 @@ auto_derived!(
             validate(length(min = 2, max = 32), regex = "super::RE_USERNAME")
         )]
         pub name: String,
+        /// OAuth2 Redirect URIs (optional, for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_redirect_uris: Option<Vec<String>>,
+        /// OAuth2 Scopes (optional, for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_scopes: Option<Vec<String>>,
     }
 
     /// New Bot Details
@@ -134,6 +153,13 @@ auto_derived!(
         /// Fields to remove from bot object
         #[cfg_attr(feature = "serde", serde(default))]
         pub remove: Vec<FieldsBot>,
+
+        /// OAuth2 Redirect URIs (optional, for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_redirect_uris: Option<Vec<String>>,
+        /// OAuth2 Scopes (optional, for provider)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oauth2_scopes: Option<Vec<String>>,
     }
 
     /// Where we are inviting a bot to

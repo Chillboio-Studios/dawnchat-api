@@ -38,6 +38,20 @@ api_token = ""
 
 [api.registration]
 # Whether an invite should be required for registration
+
+# DawnChat OAuth2 Provider Configuration
+[oauth2]
+# Issuer URL (e.g. https://app.dawn-chat.com)
+issuer = "http://local.revolt.chat"
+# Access token lifetime in seconds
+access_token_lifetime = 3600
+# Refresh token lifetime in seconds
+refresh_token_lifetime = 1209600
+# Supported scopes (comma-separated)
+supported_scopes = "identify,email,bot,admin"
+# Allow public clients (no client_secret)
+allow_public_clients = true
+# Additional provider options can be added here
 # See https://github.com/stoatchat/self-hosted#making-your-instance-invite-only
 invite_only = false
 
