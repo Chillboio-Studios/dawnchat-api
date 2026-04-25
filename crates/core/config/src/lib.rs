@@ -244,6 +244,12 @@ pub struct Api {
     pub users: ApiUsers,
 }
 
+#[derive(Deserialize, Debug, Clone, Default)]
+pub struct Admin {
+    #[serde(default)]
+    pub api_token: String,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct Pushd {
     pub production: bool,
@@ -420,6 +426,8 @@ pub struct Settings {
     pub rabbit: Rabbit,
     pub hosts: Hosts,
     pub api: Api,
+    #[serde(default)]
+    pub admin: Admin,
     pub pushd: Pushd,
     pub files: Files,
     pub features: Features,

@@ -31,6 +31,9 @@ port = 5672
 username = "rabbituser"
 password = "rabbitpass"
 
+[admin]
+api_token = ""
+
 [api]
 
 [api.registration]

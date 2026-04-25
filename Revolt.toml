@@ -12,6 +12,9 @@ redis = "redis://127.0.0.1:6379/"
 [rabbit]
 host = "127.0.0.1"
 
+[admin]
+api_token = ""
+
 [hosts]
 # Web locations of various services
 # Defaults assume all services are reverse-proxied
