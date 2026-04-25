@@ -1,6 +1,6 @@
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::{Header, StatusClass};
-use rocket::{Data, Request, Response};
+use rocket::{Request, Response};
 use url::Url;
 
 pub struct ProxyAwareRedirectFairing;
@@ -30,7 +30,7 @@ impl Fairing for ProxyAwareRedirectFairing {
         }
     }
 
-    async fn on_response<'r>(&self, request: &'r Request<'_>, _: &mut Data<'r>, response: &mut Response<'r>) {
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
         if response.status().class() != StatusClass::Redirection {
             return;
         }
@@ -39,7 +39,7 @@ impl Fairing for ProxyAwareRedirectFairing {
             .headers()
             .get_one("X-Forwarded-Proto")
             .or_else(|| request.headers().get_one("Forwarded").and_then(parse_forwarded_proto))
-            .unwrap_or_else(|| if request.secure() { "https" } else { "http" });
+            .unwrap_or("http");
 
         if !target_scheme.eq_ignore_ascii_case("http") {
             return;
