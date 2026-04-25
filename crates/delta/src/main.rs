@@ -161,6 +161,7 @@ pub async fn web() -> Rocket<Build> {
         .manage(voice_client)
         .manage(ratelimits)
         .attach(ratelimiter::RatelimitFairing)
+        .attach(util::proxy_redirect::ProxyAwareRedirectFairing)
         .attach(cors)
         .configure(rocket::Config {
             limits: rocket::data::Limits::default().limit("string", 5.megabytes()),
