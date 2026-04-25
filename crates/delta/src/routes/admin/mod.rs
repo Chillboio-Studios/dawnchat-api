@@ -4,5 +4,5 @@ use rocket::{routes, Route};
 mod bootstrap;
 
 pub fn routes() -> (Vec<Route>, OpenApi) {
-    (routes![bootstrap::panel_bootstrap], OpenApi::default())
+    (routes![bootstrap::panel_bootstrap], OpenApi::new())
 }
