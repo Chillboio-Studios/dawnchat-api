@@ -35,32 +35,26 @@ impl Fairing for ProxyAwareRedirectFairing {
             return;
         }
 
-        let target_scheme = request
-            .headers()
-            .get_one("X-Forwarded-Proto")
-            .or_else(|| request.headers().get_one("Forwarded").and_then(parse_forwarded_proto))
-            .unwrap_or("http");
-
-        if !target_scheme.eq_ignore_ascii_case("http") {
-            return;
-        }
-
         let location = match response.headers().get_one("Location") {
             Some(location) => location,
             None => return,
         };
 
-        // Remove protocol redirects in general for this API by preferring
-        // origin-relative locations whenever we can safely derive them.
+        // Always prefer origin-relative redirect locations for this API when
+        // the framework emitted an absolute URL. This keeps reverse proxies in
+        // charge of the public scheme/host and avoids redirect loops when the
+        // upstream app is contacted over plain HTTP.
         if let Ok(parsed) = Url::parse(location) {
             if matches!(parsed.scheme(), "http" | "https") {
                 let path = parsed.path();
                 let query = parsed
                     .query()
+                    .filter(|value| !value.is_empty())
                     .map(|value| format!("?{value}"))
                     .unwrap_or_default();
                 let fragment = parsed
                     .fragment()
+                    .filter(|value| !value.is_empty())
                     .map(|value| format!("#{value}"))
                     .unwrap_or_default();
                 response.set_header(Header::new(
@@ -71,8 +65,16 @@ impl Fairing for ProxyAwareRedirectFairing {
             }
         }
 
-        if let Some(stripped) = location.strip_prefix("https://") {
-            response.set_header(Header::new("Location", format!("http://{stripped}")));
+        let target_scheme = request
+            .headers()
+            .get_one("X-Forwarded-Proto")
+            .or_else(|| request.headers().get_one("Forwarded").and_then(parse_forwarded_proto))
+            .unwrap_or("http");
+
+        if target_scheme.eq_ignore_ascii_case("http") {
+            if let Some(stripped) = location.strip_prefix("https://") {
+                response.set_header(Header::new("Location", format!("http://{stripped}")));
+            }
         }
     }
 }
