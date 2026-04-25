@@ -1,8 +1,35 @@
-use axum::{extract::{FromRef, FromRequestParts}, http::request::Parts};
+use axum::{
+    extract::{FromRef, FromRequestParts},
+    http::request::Parts,
+};
 
 use revolt_result::{create_error, Error, Result};
 
 use crate::{Database, User};
+
+fn restriction_error(user: &User) -> Option<Error> {
+    let flags = user.flags.unwrap_or_default();
+
+    if flags & 4 == 4 {
+        return Some(create_error!(AccountBanned {
+            error: "User is banned".to_string(),
+            reason: user.ban_reason.clone(),
+            until: Some("permanent".to_string()),
+        }));
+    }
+
+    if let Some(suspended_until) = user.suspended_until {
+        if suspended_until > iso8601_timestamp::Timestamp::now_utc() {
+            return Some(create_error!(AccountBanned {
+                error: "User is banned".to_string(),
+                reason: user.suspension_reason.clone(),
+                until: Some(suspended_until.format().to_string()),
+            }));
+        }
+    }
+
+    None
+}
 
 #[async_trait::async_trait]
 impl<S> FromRequestParts<S> for User
@@ -17,12 +44,22 @@ where
 
         if let Some(Ok(bot_token)) = parts.headers.get("x-bot-token").map(|v| v.to_str()) {
             let bot = db.fetch_bot_by_token(bot_token).await?;
-            db.fetch_user(&bot.id).await
+            let user = db.fetch_user(&bot.id).await?;
+            if let Some(error) = restriction_error(&user) {
+                Err(error)
+            } else {
+                Ok(user)
+            }
         } else if let Some(Ok(session_token)) =
             parts.headers.get("x-session-token").map(|v| v.to_str())
         {
             let session = db.fetch_session_by_token(session_token).await?;
-            db.fetch_user(&session.user_id).await
+            let user = db.fetch_user(&session.user_id).await?;
+            if let Some(error) = restriction_error(&user) {
+                Err(error)
+            } else {
+                Ok(user)
+            }
         } else {
             Err(create_error!(NotAuthenticated))
         }

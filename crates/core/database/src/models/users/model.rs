@@ -58,6 +58,12 @@ auto_derived_partial!(
         /// Time until user is unsuspended
         #[serde(skip_serializing_if = "Option::is_none")]
         pub suspended_until: Option<Timestamp>,
+        /// Platform suspension reason
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub suspension_reason: Option<String>,
+        /// Platform ban reason
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub ban_reason: Option<String>,
         /// Last acknowledged policy change
         pub last_acknowledged_policy_change: Timestamp,
     },
@@ -188,6 +194,8 @@ impl Default for User {
             privileged: Default::default(),
             bot: Default::default(),
             suspended_until: Default::default(),
+            suspension_reason: Default::default(),
+            ban_reason: Default::default(),
             last_acknowledged_policy_change: Timestamp::UNIX_EPOCH,
         }
     }

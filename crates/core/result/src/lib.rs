@@ -111,6 +111,13 @@ pub enum ErrorType {
     UnknownServer,
     InvalidRole,
     Banned,
+    AccountBanned {
+        error: String,
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        reason: Option<String>,
+        #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+        until: Option<String>,
+    },
     TooManyServers {
         max: usize,
     },
