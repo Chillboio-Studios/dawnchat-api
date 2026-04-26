@@ -144,7 +144,7 @@ const config: Config = {
             },
             {
               label: 'Stoat Server',
-              href: 'https://stt.gg/Testers'
+              href: 'https://app.dawn-chat.com/Testers'
             },
           ],
         },
