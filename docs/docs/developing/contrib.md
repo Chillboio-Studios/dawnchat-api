@@ -27,7 +27,7 @@ Please do not open PRs generated with LLMs.
 
 ## What can I help with?
 
-Stuff is currently being moved around, for the mean time, come ask in the development server: https://app.dawn-chat.com/API
+Stuff is currently being moved around, for the mean time, come ask in the development server: https://stt.gg/API
 
 Also typically `help wanted` labels are available on repo issues!
 
