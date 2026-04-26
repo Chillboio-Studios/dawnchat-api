@@ -100,30 +100,28 @@ proxy = "https://abc@your.sentry/1"
 
 If you use custom service ports, update both Docker compose mappings and relevant override files.
 
-## OAuth2 Login (Optional)
+## OAuth2 Provider
 
-Delta now exposes OAuth2 login routes at:
+Delta exposes OAuth2 provider routes at:
 
-- `GET /auth/oauth2/enabled`
-- `GET /auth/oauth2/authorize?redirect_uri=<client-callback>`
-- `GET /auth/oauth2/callback`
-- `POST /auth/oauth2/exchange`
+- `GET /oauth/enabled`
+- `GET /oauth/login?client_id=<id>&redirect_uri=<uri>&response_type=code&scope=<scopes>&state=<state>`
+- `GET /oauth/authorize?...` (alias of `/oauth/login`)
+- `POST /oauth/token`
+- `POST /oauth/revoke`
+- `GET /oauth/@me?access_token=<token>`
 
-To enable OAuth2, set these environment variables for the API process:
+Compatibility aliases are also mounted at `/oauth2/*` and `/auth/oauth2/*`.
 
-- `DAWNCHAT_OAUTH2_CLIENT_ID`
-- `DAWNCHAT_OAUTH2_AUTHORIZE_URL`
-- `DAWNCHAT_OAUTH2_TOKEN_URL`
-- `DAWNCHAT_OAUTH2_USERINFO_URL`
+OAuth2 provider settings are loaded from `Revolt.toml` under `[oauth2]`:
 
-Optional:
+- `issuer`
+- `access_token_lifetime`
+- `refresh_token_lifetime`
+- `supported_scopes`
+- `allow_public_clients`
 
-- `DAWNCHAT_OAUTH2_CLIENT_SECRET`
-- `DAWNCHAT_OAUTH2_SCOPE` (default: `openid profile email`)
-- `DAWNCHAT_OAUTH2_PROVIDER_NAME` (default: `OAuth2`)
-- `DAWNCHAT_OAUTH2_CALLBACK_URL` (default: `<hosts.api>/auth/oauth2/callback`)
-- `DAWNCHAT_OAUTH2_EMAIL_FIELD` (default: `email`)
-- `DAWNCHAT_OAUTH2_STATE_SECRET` (falls back to `api.security.authifier_shield_key`)
+Client credentials are bot-owned (`oauth2_client_id`, `oauth2_client_secret`, redirect URIs and scopes).
 
 ## Building
 

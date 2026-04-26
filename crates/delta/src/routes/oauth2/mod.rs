@@ -182,7 +182,10 @@ async fn issue_tokens(
     let settings = config().await.oauth2;
     let now = now_unix();
 
-    let access_token = nanoid::nanoid!(64);
+    let access_token = session
+        .as_ref()
+        .map(|value| value.token.to_string())
+        .unwrap_or_else(|| nanoid::nanoid!(64));
     let refresh_token = nanoid::nanoid!(64);
 
     ACCESS_TOKENS.insert(

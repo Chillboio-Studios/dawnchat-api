@@ -99,7 +99,7 @@ pub async fn panel_bootstrap(_admin: AdminTokenGuard) -> Result<Json<AdminBootst
         },
         oauth: AdminBootstrapOauth {
             client_id: "dawnchat-admin-panel".to_string(),
-            authorize_url: format!("{app_base}/oauth/authorize"),
+            authorize_url: format!("{api_base}/oauth/authorize"),
             token_url: format!("{api_base}/oauth/token"),
             scope:
                 "admin:read admin:write users:read users:write servers:read servers:write safety:read safety:write"
