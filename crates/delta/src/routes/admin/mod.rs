@@ -1,10 +1,10 @@
 use revolt_config::config;
-use revolt_database::{Database, User};
+use revolt_database::Database;
 use revolt_result::{create_error, Result};
 use rocket::http::Status;
 use rocket::request::{self, FromRequest, Outcome, Request};
 use rocket::{serde::json::Json, State};
-use rocket::{delete, get, patch, routes, Route};
+use rocket::{delete, get, routes, Route};
 use rocket_empty::EmptyResponse;
 use revolt_rocket_okapi::revolt_okapi::openapi3::OpenApi;
 use serde::{Deserialize, Serialize};
@@ -63,7 +63,7 @@ pub async fn admin_get_user(
     _admin: AdminTokenGuard,
     db: &State<Database>,
     user_id: String,
-) -> Result<Json<User>> {
+) -> Result<Json<revolt_database::User>> {
     let user = db.fetch_user(&user_id).await?;
     Ok(Json(user))
 }
@@ -78,6 +78,16 @@ pub async fn admin_delete_user(
     Ok(EmptyResponse)
 }
 
+#[get("/servers/<server_id>")]
+pub async fn admin_get_server(
+    _admin: AdminTokenGuard,
+    db: &State<Database>,
+    server_id: String,
+) -> Result<Json<revolt_database::Server>> {
+    let server = db.fetch_server(&server_id).await?;
+    Ok(Json(server))
+}
+
 #[delete("/servers/<server_id>")]
 pub async fn admin_delete_server(
     _admin: AdminTokenGuard,
@@ -86,6 +96,16 @@ pub async fn admin_delete_server(
 ) -> Result<EmptyResponse> {
     db.delete_server(&server_id).await?;
     Ok(EmptyResponse)
+}
+
+#[get("/files/<file_id>")]
+pub async fn admin_get_file(
+    _admin: AdminTokenGuard,
+    db: &State<Database>,
+    file_id: String,
+) -> Result<Json<revolt_database::File>> {
+    let file = db.fetch_attachment("File", &file_id).await?;
+    Ok(Json(file))
 }
 
 #[delete("/files/<file_id>")]
@@ -104,7 +124,9 @@ pub fn routes() -> (Vec<Route>, OpenApi) {
             admin_stats,
             admin_get_user,
             admin_delete_user,
+            admin_get_server,
             admin_delete_server,
+            admin_get_file,
             admin_delete_file,
         ],
         OpenApi::new(),
