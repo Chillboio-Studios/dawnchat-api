@@ -33,6 +33,15 @@ impl AbstractBots for ReferenceDb {
             .ok_or_else(|| create_error!(NotFound))
     }
 
+    /// Fetch a bot by OAuth2 client id
+    async fn fetch_bot_by_oauth2_client_id(&self, client_id: &str) -> Result<Bot> {
+        let bots = self.bots.lock().await;
+        bots.values()
+            .find(|bot| bot.oauth2_client_id.as_deref() == Some(client_id))
+            .cloned()
+            .ok_or_else(|| create_error!(NotFound))
+    }
+
     /// Fetch bots owned by a user
     async fn fetch_bots_by_user(&self, user_id: &str) -> Result<Vec<Bot>> {
         let bots = self.bots.lock().await;

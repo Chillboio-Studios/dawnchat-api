@@ -32,6 +32,19 @@ impl AbstractBots for MongoDb {
         .ok_or_else(|| create_error!(NotFound))
     }
 
+    /// Fetch a bot by OAuth2 client id
+    async fn fetch_bot_by_oauth2_client_id(&self, client_id: &str) -> Result<Bot> {
+        query!(
+            self,
+            find_one,
+            COL,
+            doc! {
+                "oauth2_client_id": client_id
+            }
+        )?
+        .ok_or_else(|| create_error!(NotFound))
+    }
+
     /// Fetch bots owned by a user
     async fn fetch_bots_by_user(&self, user_id: &str) -> Result<Vec<Bot>> {
         query!(

@@ -77,6 +77,10 @@ impl Default for Bot {
             terms_of_service_url: Default::default(),
             privacy_policy_url: Default::default(),
             flags: Default::default(),
+            oauth2_client_id: Default::default(),
+            oauth2_client_secret: Default::default(),
+            oauth2_redirect_uris: Default::default(),
+            oauth2_scopes: Default::default(),
         }
     }
 }

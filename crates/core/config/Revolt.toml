@@ -38,6 +38,7 @@ api_token = ""
 
 [api.registration]
 # Whether an invite should be required for registration
+invite_only = false
 
 # DawnChat OAuth2 Provider Configuration
 [oauth2]
@@ -51,9 +52,6 @@ refresh_token_lifetime = 1209600
 supported_scopes = "identify,email,bot,admin"
 # Allow public clients (no client_secret)
 allow_public_clients = true
-# Additional provider options can be added here
-# See https://github.com/stoatchat/self-hosted#making-your-instance-invite-only
-invite_only = false
 
 [api.smtp]
 # Email server configuration for verification

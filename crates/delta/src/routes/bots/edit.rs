@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+
+use revolt_config::config;
 use revolt_database::{util::reference::Reference, Database, PartialBot, User};
 use revolt_models::v0::{self, DataEditBot};
 use revolt_result::{create_error, Result};
@@ -5,6 +8,21 @@ use rocket::State;
 
 use rocket::serde::json::Json;
 use validator::Validate;
+
+fn parse_scopes(value: &str) -> Vec<String> {
+    value
+        .split(|c: char| c == ',' || c.is_whitespace())
+        .map(str::trim)
+        .filter(|scope| !scope.is_empty())
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+fn valid_redirect_uri(uri: &str) -> bool {
+    url::Url::parse(uri)
+        .map(|parsed| matches!(parsed.scheme(), "http" | "https"))
+        .unwrap_or(false)
+}
 
 /// # Edit Bot
 ///
@@ -32,6 +50,27 @@ pub async fn edit_bot(
     let mut user = db.fetch_user(&bot.id).await?;
     if let Some(name) = data.name {
         user.update_username(db, name).await?;
+    }
+
+    if let Some(ref redirect_uris) = data.oauth2_redirect_uris {
+        if !redirect_uris.iter().all(|uri| valid_redirect_uri(uri)) {
+            return Err(create_error!(InvalidOperation));
+        }
+    }
+
+    if let Some(ref requested_scopes) = data.oauth2_scopes {
+        let supported_scopes: HashSet<String> =
+            parse_scopes(&config().await.oauth2.supported_scopes)
+                .into_iter()
+                .collect();
+
+        if requested_scopes.is_empty()
+            || requested_scopes
+                .iter()
+                .any(|scope| !supported_scopes.contains(scope))
+        {
+            return Err(create_error!(InvalidOperation));
+        }
     }
 
 

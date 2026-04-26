@@ -1,9 +1,27 @@
+use std::collections::HashSet;
+
+use revolt_config::config;
 use revolt_database::{Bot, Database, User};
 use revolt_models::v0;
 use revolt_result::{create_error, Result};
 use rocket::serde::json::Json;
 use rocket::State;
 use validator::Validate;
+
+fn parse_scopes(value: &str) -> Vec<String> {
+    value
+        .split(|c: char| c == ',' || c.is_whitespace())
+        .map(str::trim)
+        .filter(|scope| !scope.is_empty())
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+fn valid_redirect_uri(uri: &str) -> bool {
+    url::Url::parse(uri)
+        .map(|parsed| matches!(parsed.scheme(), "http" | "https"))
+        .unwrap_or(false)
+}
 
 /// # Create Bot
 ///
@@ -22,6 +40,27 @@ pub async fn create_bot(
         })
     })?;
 
+    if let Some(ref redirect_uris) = info.oauth2_redirect_uris {
+        if !redirect_uris.iter().all(|uri| valid_redirect_uri(uri)) {
+            return Err(create_error!(InvalidOperation));
+        }
+    }
+
+    if let Some(ref requested_scopes) = info.oauth2_scopes {
+        let supported_scopes: HashSet<String> =
+            parse_scopes(&config().await.oauth2.supported_scopes)
+                .into_iter()
+                .collect();
+
+        if requested_scopes.is_empty()
+            || requested_scopes
+                .iter()
+                .any(|scope| !supported_scopes.contains(scope))
+        {
+            return Err(create_error!(InvalidOperation));
+        }
+    }
+
     // Generate client_id and client_secret if any OAuth2 fields are present
     let (oauth2_client_id, oauth2_client_secret) = if info.oauth2_redirect_uris.is_some() || info.oauth2_scopes.is_some() {
         (Some(nanoid::nanoid!(32)), Some(nanoid::nanoid!(64)))
@@ -29,7 +68,7 @@ pub async fn create_bot(
         (None, None)
     };
 
-    let mut partial = revolt_database::PartialBot {
+    let partial = revolt_database::PartialBot {
         oauth2_client_id,
         oauth2_client_secret,
         oauth2_redirect_uris: info.oauth2_redirect_uris,
@@ -37,7 +76,7 @@ pub async fn create_bot(
         ..Default::default()
     };
 
-    let (mut bot, user) = Bot::create(db, info.name, &user, Some(partial)).await?;
+    let (bot, user) = Bot::create(db, info.name, &user, Some(partial)).await?;
     Ok(Json(v0::BotWithUserResponse {
         bot: bot.into(),
         user: user.into_self(false).await,

@@ -34,6 +34,10 @@ impl From<crate::Bot> for Bot {
             terms_of_service_url: value.terms_of_service_url,
             privacy_policy_url: value.privacy_policy_url,
             flags: value.flags.unwrap_or_default() as u32,
+            oauth2_client_id: value.oauth2_client_id,
+            oauth2_client_secret: value.oauth2_client_secret,
+            oauth2_redirect_uris: value.oauth2_redirect_uris,
+            oauth2_scopes: value.oauth2_scopes,
         }
     }
 }
