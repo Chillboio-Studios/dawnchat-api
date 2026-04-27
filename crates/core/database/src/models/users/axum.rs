@@ -17,16 +17,6 @@ fn restriction_error(user: &User) -> Option<Error> {
         }));
     }
 
-    if let Some(suspended_until) = user.suspended_until {
-        if suspended_until > iso8601_timestamp::Timestamp::now_utc() {
-            return Some(create_error!(AccountBanned {
-                error: "User is banned".to_string(),
-                reason: user.suspension_reason.clone(),
-                until: Some(suspended_until.format().to_string()),
-            }));
-        }
-    }
-
     None
 }
 
