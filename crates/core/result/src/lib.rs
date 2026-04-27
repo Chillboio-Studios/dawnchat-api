@@ -194,6 +194,11 @@ pub enum ErrorType {
     FeatureDisabled {
         feature: String,
     },
+    MfaTicketInvalid,
+    MfaAlreadyEnabled,
+    MfaNotEnabled,
+    Muted,
+    InvalidHTTPResponse,
 }
 
 #[macro_export]

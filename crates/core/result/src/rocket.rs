@@ -76,6 +76,8 @@ impl<'r> Responder<'r, 'static> for Error {
             ErrorType::NotOwner => Status::Forbidden,
             ErrorType::IsElevated => Status::Forbidden,
 
+            ErrorType::Muted => Status::Forbidden,
+
             ErrorType::DatabaseError { .. } => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
             ErrorType::InvalidOperation => Status::BadRequest,
@@ -101,6 +103,10 @@ impl<'r> Responder<'r, 'static> for Error {
             ErrorType::ImageProcessingFailed => Status::InternalServerError,
             ErrorType::NoEmbedData => Status::BadRequest,
             ErrorType::VosoUnavailable => Status::BadRequest,
+            ErrorType::MfaTicketInvalid => Status::BadRequest,
+            ErrorType::MfaAlreadyEnabled => Status::Conflict,
+            ErrorType::MfaNotEnabled => Status::BadRequest,
+            ErrorType::InvalidHTTPResponse => Status::InternalServerError,
         };
 
         // Serialize the error data structure into JSON.
