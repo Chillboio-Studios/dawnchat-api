@@ -1,4 +1,4 @@
-// use revolt_database::util::reference::Reference;
+use revolt_database::util::reference::Reference;
 use revolt_database::{Database, User, AMQP};
 use revolt_models::v0;
 use revolt_result::{create_error, Result};
@@ -12,17 +12,18 @@ use rocket::State;
 #[post("/<target>/friend")]
 pub async fn send_friend_request(
     db: &State<Database>,
-    user: User,
+    amqp: &State<AMQP>,
+    mut user: User,
     target: Reference<'_>,
 ) -> Result<Json<v0::User>> {
-    if let Some(muted_until) = user.muted_until {
-        if muted_until > iso8601_timestamp::Timestamp::now_utc() {
-            return Err(create_error!(Muted));
-        }
-    }
+    let mut target = target.as_user(db).await?;
 
     if target.id == user.id {
         return Err(create_error!(InvalidOperation));
+    }
+
+    if user.bot.is_some() || target.bot.is_some() {
+        return Err(create_error!(IsBot));
     }
 
     user.add_friend(db, amqp, &mut target).await?;

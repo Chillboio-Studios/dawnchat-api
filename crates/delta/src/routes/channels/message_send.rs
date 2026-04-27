@@ -27,12 +27,6 @@ pub async fn message_send(
     data: Json<v0::DataMessageSend>,
     idempotency: IdempotencyKey,
 ) -> Result<Json<v0::Message>> {
-    if let Some(muted_until) = user.muted_until {
-        if muted_until > iso8601_timestamp::Timestamp::now_utc() {
-            return Err(create_error!(Muted));
-        }
-    }
-
     let data = data.into_inner();
     data.validate().map_err(|error| {
         create_error!(FailedValidation {
