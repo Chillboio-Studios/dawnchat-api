@@ -2,6 +2,7 @@ use axum::{
     extract::{FromRef, FromRequestParts},
     http::request::Parts,
 };
+use iso8601_timestamp::Timestamp;
 use revolt_result::{create_error, Error, Result};
 
 use crate::{Database, User};
@@ -14,6 +15,17 @@ fn restriction_error(user: &User) -> Option<Error> {
             error: "User is banned".to_string(),
             reason: user.ban_reason.clone(),
             until: Some("permanent".to_string()),
+        }));
+    }
+
+    if user
+        .suspended_until
+        .is_some_and(|suspended_until| suspended_until > Timestamp::now_utc())
+    {
+        return Some(create_error!(AccountBanned {
+            error: "User is banned".to_string(),
+            reason: user.suspension_reason.clone(),
+            until: user.suspended_until.map(|until| until.format().to_string()),
         }));
     }
 
