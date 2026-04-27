@@ -19,6 +19,12 @@ pub async fn react_message(
     msg: Reference<'_>,
     emoji: Reference<'_>,
 ) -> Result<EmptyResponse> {
+    if let Some(muted_until) = user.muted_until {
+        if muted_until > iso8601_timestamp::Timestamp::now_utc() {
+            return Err(create_error!(Muted));
+        }
+    }
+
     let channel = target.as_channel(db).await?;
     let mut query = DatabasePermissionQuery::new(db, &user).channel(&channel);
     calculate_channel_permissions(&mut query)

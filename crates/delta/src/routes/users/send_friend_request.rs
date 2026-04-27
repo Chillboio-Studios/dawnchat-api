@@ -9,23 +9,22 @@ use rocket::State;
 ///
 /// Send a friend request to another user.
 #[openapi(tag = "Relationships")]
-#[post("/friend", data = "<data>")]
+#[post("/<target>/friend")]
 pub async fn send_friend_request(
     db: &State<Database>,
-    amqp: &State<AMQP>,
-    mut user: User,
-    data: Json<v0::DataSendFriendRequest>,
+    user: User,
+    target: Reference<'_>,
 ) -> Result<Json<v0::User>> {
-    if let Some((username, discriminator)) = data.username.split_once('#') {
-        let mut target = db.fetch_user_by_username(username, discriminator).await?;
-
-        if user.bot.is_some() || target.bot.is_some() {
-            return Err(create_error!(IsBot));
+    if let Some(muted_until) = user.muted_until {
+        if muted_until > iso8601_timestamp::Timestamp::now_utc() {
+            return Err(create_error!(Muted));
         }
-
-        user.add_friend(db, amqp, &mut target).await?;
-        Ok(Json(target.into(db, &user).await))
-    } else {
-        Err(create_error!(InvalidProperty))
     }
+
+    if target.id == user.id {
+        return Err(create_error!(InvalidOperation));
+    }
+
+    user.add_friend(db, amqp, &mut target).await?;
+    Ok(Json(target.into(db, &user).await))
 }

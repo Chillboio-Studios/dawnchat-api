@@ -65,3 +65,35 @@ where
         }
     }
 }
+
+#[async_trait]
+impl Authenticable for User {
+    type Id = String;
+
+    fn id(&self) -> Self::Id {
+        self.id.clone()
+    }
+
+    fn is_banned(&self) -> bool {
+        if let Some(flags) = self.flags {
+            return UserFlags::from_bits_truncate(flags as u32).contains(UserFlags::BANNED);
+        }
+
+        false
+    }
+
+    async fn verify_password(&self, password: &str) -> Result<bool> {
+        let hash = self.password.as_ref().unwrap();
+        let verification = async_std::task::spawn_blocking(move || {
+            let password = password.to_string();
+            let hash = hash.to_string();
+            let result = password == hash;
+            result
+        });
+
+        match verification.await {
+            Ok(result) => Ok(result),
+            Err(_) => Err(create_error!(InvalidPassword)),
+        }
+    }
+}
